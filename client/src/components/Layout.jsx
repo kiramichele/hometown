@@ -1,20 +1,37 @@
+import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import Avatar from "./Avatar.jsx";
 
-// App shell: a sticky warm header with the brand + the signed-in user, and a
-// centered content column. Every signed-in page renders inside this.
+// Nav tab styling — sage pill when active, muted otherwise.
+function navClass({ isActive }) {
+  return `rounded-full px-3 py-1.5 text-sm font-bold transition ${
+    isActive
+      ? "bg-sage-100 text-sage-700"
+      : "text-muted hover:bg-black/5 hover:text-ink"
+  }`;
+}
+
+// App shell: a sticky warm header with the brand, page nav, and the signed-in
+// user. Every signed-in page renders inside this centered column.
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
 
   return (
     <div className="min-h-full">
       <header className="sticky top-0 z-10 border-b border-black/5 bg-cream/80 backdrop-blur">
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
-          <div className="flex items-baseline gap-2">
+        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
+          <div className="flex items-center gap-3">
             <span className="text-xl font-extrabold tracking-tight text-sage-600">
               Hometown
             </span>
-            <span className="text-sm font-semibold text-muted">Burgaw, NC</span>
+            <nav className="flex items-center gap-1">
+              <NavLink to="/" end className={navClass}>
+                Feed
+              </NavLink>
+              <NavLink to="/events" className={navClass}>
+                Events
+              </NavLink>
+            </nav>
           </div>
 
           <div className="flex items-center gap-3">

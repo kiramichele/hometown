@@ -4,6 +4,8 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Feed from "./pages/Feed.jsx";
+import Events from "./pages/Events.jsx";
+import EventDetail from "./pages/EventDetail.jsx";
 
 export default function App() {
   return (
@@ -17,6 +19,22 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Feed />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/events"
+            element={
+              <ProtectedRoute>
+                <Events />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/events/:id"
+            element={
+              <ProtectedRoute>
+                <EventDetail />
               </ProtectedRoute>
             }
           />

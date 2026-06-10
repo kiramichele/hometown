@@ -6,6 +6,7 @@ import Register from "./pages/Register.jsx";
 import Feed from "./pages/Feed.jsx";
 import Events from "./pages/Events.jsx";
 import EventDetail from "./pages/EventDetail.jsx";
+import Board from "./pages/Board.jsx";
 
 export default function App() {
   return (
@@ -35,6 +36,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <EventDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/board"
+            element={
+              <ProtectedRoute>
+                <Board />
               </ProtectedRoute>
             }
           />

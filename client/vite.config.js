@@ -10,6 +10,12 @@ export default defineConfig({
     // and the frontend can just call "/api/..." with no host.
     proxy: {
       "/api": "http://localhost:5000",
+      // Proxy the Socket.io endpoint (with WebSocket upgrade) so the client can
+      // connect same-origin in dev, just like the REST calls.
+      "/socket.io": {
+        target: "http://localhost:5000",
+        ws: true,
+      },
     },
   },
 });

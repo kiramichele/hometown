@@ -5,6 +5,7 @@ import Neighborhood from "../models/Neighborhood.js";
 import User from "../models/User.js";
 import Post from "../models/Post.js";
 import Event from "../models/Event.js";
+import Message from "../models/Message.js";
 
 // Build a Date relative to now: N days out, at a given hour (local time).
 function daysFromNow(days, hour = 18) {
@@ -23,6 +24,7 @@ async function seed() {
     User.deleteMany({}),
     Post.deleteMany({}),
     Event.deleteMany({}),
+    Message.deleteMany({}),
   ]);
 
   const hood = await Neighborhood.create({
@@ -139,8 +141,27 @@ async function seed() {
     },
   ]);
 
+  // A short back-and-forth so the realtime board isn't empty on first load.
+  await Message.create([
+    {
+      neighborhood: hood._id,
+      author: admin._id,
+      body: "Welcome to the neighborhood board! Say hi 👋",
+    },
+    {
+      neighborhood: hood._id,
+      author: jane._id,
+      body: "Hi everyone! Loving this already.",
+    },
+    {
+      neighborhood: hood._id,
+      author: mod._id,
+      body: "Anyone around for the cookout this weekend?",
+    },
+  ]);
+
   console.log(
-    "✓ Seeded neighborhood + 3 users (password: password123) + 4 posts + 4 events"
+    "✓ Seeded neighborhood + 3 users (password: password123) + 4 posts + 4 events + 3 messages"
   );
   await mongoose.disconnect();
 }

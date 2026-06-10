@@ -31,6 +31,9 @@ export default function Layout({ children }) {
               <NavLink to="/events" className={navClass}>
                 Events
               </NavLink>
+              <NavLink to="/board" className={navClass}>
+                Board
+              </NavLink>
             </nav>
           </div>
 

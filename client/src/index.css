@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+/* Warm & friendly theme — community bulletin board feel.
+   These tokens become utilities automatically, e.g. bg-cream, text-sage-600. */
+@theme {
+  --color-cream: #faf8f5;
+  --color-ink: #2a2a28;
+  --color-muted: #6b6862;
+
+  --color-sage-50: #eef5f1;
+  --color-sage-100: #d7e8df;
+  --color-sage-200: #b3d3c1;
+  --color-sage-500: #2f7d5b;
+  --color-sage-600: #276a4d;
+  --color-sage-700: #1f543d;
+
+  --font-sans: "Nunito", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --radius-xl2: 1rem;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+/* A few small component classes for things repeated across the app. */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full
+      bg-sage-500 px-5 py-2.5 font-semibold text-white transition
+      hover:bg-sage-600 active:bg-sage-700
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-black/10 bg-white px-4 py-2.5
+      text-ink placeholder:text-muted/70 outline-none transition
+      focus:border-sage-500 focus:ring-2 focus:ring-sage-500/20;
+  }
+
+  .card {
+    @apply rounded-2xl border border-black/5 bg-white shadow-sm;
+  }
+}

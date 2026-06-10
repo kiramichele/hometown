@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { connectDB } from "./config/db.js";
 import authRoutes from "./routes/auth.js";
+import postRoutes from "./routes/posts.js";
 
 const app = express();
 
@@ -13,6 +14,14 @@ app.use(express.json());
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
 app.use("/api/auth", authRoutes);
+app.use("/api/posts", postRoutes);
+
+// Centralized error handler — routes call next(err) and land here so we never
+// leak a stack trace to the client but still log it server-side.
+app.use((err, _req, res, _next) => {
+  console.error(err);
+  res.status(500).json({ error: "Something went wrong" });
+});
 
 const PORT = process.env.PORT || 5000;
 

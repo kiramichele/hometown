@@ -5,7 +5,7 @@
   "description": "Hometown — neighborhood social platform (single-service deploy)",
   "type": "module",
   "engines": {
-    "node": ">=18"
+    "node": ">=20.19.0"
   },
   "scripts": {
     "build": "npm install --prefix server && npm install --prefix client && npm run build --prefix client",

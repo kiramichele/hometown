@@ -6,6 +6,7 @@ import User from "../models/User.js";
 import Post from "../models/Post.js";
 import Event from "../models/Event.js";
 import Message from "../models/Message.js";
+import Listing from "../models/Listing.js";
 
 // Build a Date relative to now: N days out, at a given hour (local time).
 function daysFromNow(days, hour = 18) {
@@ -25,6 +26,7 @@ async function seed() {
     Post.deleteMany({}),
     Event.deleteMany({}),
     Message.deleteMany({}),
+    Listing.deleteMany({}),
   ]);
 
   const hood = await Neighborhood.create({
@@ -160,8 +162,68 @@ async function seed() {
     },
   ]);
 
+  // Sample marketplace listings. Images use picsum.photos placeholders so the
+  // grid looks populated before Cloudinary uploads come in.
+  await Listing.create([
+    {
+      neighborhood: hood._id,
+      seller: jane._id,
+      title: "Solid oak dining table",
+      description: "Seats 6, a few honest scratches but very sturdy. Pickup only.",
+      price: 120,
+      category: "furniture",
+      status: "available",
+      location: "Bridgers St",
+      images: ["https://picsum.photos/seed/table/600/450"],
+    },
+    {
+      neighborhood: hood._id,
+      seller: mod._id,
+      title: "Kids' balance bike",
+      description: "Outgrown but loved. Great starter bike for a 2–4 year old.",
+      price: 25,
+      category: "kids",
+      status: "available",
+      location: "Wright St",
+      images: ["https://picsum.photos/seed/bike/600/450"],
+    },
+    {
+      neighborhood: hood._id,
+      seller: admin._id,
+      title: "Cordless drill + bits",
+      description: "20V drill, charger, and a full bit set. Works perfectly.",
+      price: 40,
+      category: "tools",
+      status: "available",
+      location: "Cowan St",
+      images: ["https://picsum.photos/seed/drill/600/450"],
+    },
+    {
+      neighborhood: hood._id,
+      seller: jane._id,
+      title: "Free moving boxes",
+      description: "About 15 sturdy boxes, various sizes. First come, first served.",
+      price: 0,
+      category: "free",
+      status: "available",
+      location: "Bridgers St porch",
+      images: ["https://picsum.photos/seed/boxes/600/450"],
+    },
+    {
+      neighborhood: hood._id,
+      seller: mod._id,
+      title: "Air fryer (barely used)",
+      description: "Gifted a duplicate. Clean, all parts included.",
+      price: 35,
+      category: "household",
+      status: "sold",
+      location: "Wright St",
+      images: ["https://picsum.photos/seed/airfryer/600/450"],
+    },
+  ]);
+
   console.log(
-    "✓ Seeded neighborhood + 3 users (password: password123) + 4 posts + 4 events + 3 messages"
+    "✓ Seeded neighborhood + 3 users (password: password123) + 4 posts + 4 events + 3 messages + 5 listings"
   );
   await mongoose.disconnect();
 }

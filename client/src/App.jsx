@@ -7,6 +7,8 @@ import Feed from "./pages/Feed.jsx";
 import Events from "./pages/Events.jsx";
 import EventDetail from "./pages/EventDetail.jsx";
 import Board from "./pages/Board.jsx";
+import Marketplace from "./pages/Marketplace.jsx";
+import ListingDetail from "./pages/ListingDetail.jsx";
 
 export default function App() {
   return (
@@ -44,6 +46,22 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Board />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/market"
+            element={
+              <ProtectedRoute>
+                <Marketplace />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/market/:id"
+            element={
+              <ProtectedRoute>
+                <ListingDetail />
               </ProtectedRoute>
             }
           />

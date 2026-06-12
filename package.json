@@ -1,0 +1,15 @@
+{
+  "name": "hometown",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hometown — neighborhood social platform (single-service deploy)",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "npm install --prefix server && npm install --prefix client && npm run build --prefix client",
+    "start": "node server/src/index.js",
+    "seed": "npm run seed --prefix server"
+  }
+}

@@ -1,5 +1,8 @@
 import "dotenv/config";
 import http from "http";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
 import express from "express";
 import cors from "cors";
 import { connectDB } from "./config/db.js";
@@ -27,6 +30,22 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/listings", listingRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/notifications", notificationRoutes);
+
+// In production (single-service deploy) the server also serves the built React
+// app. We detect the build rather than reading NODE_ENV: in dev the dist folder
+// doesn't exist (Vite serves the client), so this block is simply skipped.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const clientDist = path.resolve(__dirname, "../../client/dist");
+if (fs.existsSync(clientDist)) {
+  app.use(express.static(clientDist));
+  // SPA fallback: any non-API GET returns index.html so client-side routing
+  // (/, /events, /board, /market, …) works on direct load and refresh.
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api")) return next();
+    res.sendFile(path.join(clientDist, "index.html"));
+  });
+  console.log("✓ Serving client build from", clientDist);
+}
 
 // Centralized error handler — routes call next(err) and land here so we never
 // leak a stack trace to the client but still log it server-side.

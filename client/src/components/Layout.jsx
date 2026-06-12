@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import Avatar from "./Avatar.jsx";
+import NotificationBell from "./NotificationBell.jsx";
 
 // Nav tab styling — sage pill when active, muted otherwise.
 function navClass({ isActive }) {
@@ -41,6 +42,7 @@ export default function Layout({ children }) {
           </div>
 
           <div className="flex items-center gap-3">
+            <NotificationBell />
             <div className="hidden text-right sm:block">
               <div className="text-sm font-bold leading-tight">
                 {user.displayName}

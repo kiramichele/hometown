@@ -5,6 +5,7 @@ import {
   requireAuth,
   requireSameNeighborhood,
 } from "../middleware/auth.js";
+import { notify } from "../lib/notify.js";
 
 const router = Router();
 
@@ -210,15 +211,31 @@ router.post(
       const uid = String(req.user._id);
       const idx = req.event.rsvps.findIndex((r) => String(r.user) === uid);
 
+      let setRsvp = true; // false only when toggling off
       if (idx === -1) {
         req.event.rsvps.push({ user: req.user._id, status });
       } else if (req.event.rsvps[idx].status === status) {
         req.event.rsvps.splice(idx, 1); // toggle off
+        setRsvp = false;
       } else {
         req.event.rsvps[idx].status = status; // change of heart
       }
 
       await req.event.save();
+
+      // Let the host know about a new/changed RSVP (not a toggle-off).
+      if (setRsvp) {
+        const verb = { going: "is going to", maybe: "might go to", no: "can't make" }[status];
+        notify({
+          recipient: req.event.host,
+          actor: req.user._id,
+          neighborhood: req.user.neighborhood,
+          type: "event_rsvp",
+          text: `${req.user.displayName} ${verb} "${req.event.title}"`,
+          link: `/events/${req.event._id}`,
+        }).catch((e) => console.error("notify failed:", e.message));
+      }
+
       res.json({ event: await hydrate(req.event._id) });
     } catch (err) {
       next(err);

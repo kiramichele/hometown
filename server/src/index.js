@@ -10,6 +10,7 @@ import eventRoutes from "./routes/events.js";
 import messageRoutes from "./routes/messages.js";
 import listingRoutes from "./routes/listings.js";
 import uploadRoutes from "./routes/uploads.js";
+import notificationRoutes from "./routes/notifications.js";
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/listings", listingRoutes);
 app.use("/api/uploads", uploadRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Centralized error handler — routes call next(err) and land here so we never
 // leak a stack trace to the client but still log it server-side.

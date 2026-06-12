@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { messagesApi } from "../api/messages.js";
-import { createSocket } from "../lib/socket.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useSocket } from "../context/SocketContext.jsx";
 import Layout from "../components/Layout.jsx";
 import Avatar from "../components/Avatar.jsx";
 
@@ -16,6 +16,7 @@ function typingText(names) {
 
 export default function Board() {
   const { user } = useAuth();
+  const socket = useSocket(); // shared app-wide connection
   const [messages, setMessages] = useState([]);
   const [online, setOnline] = useState([]);
   const [typingUsers, setTypingUsers] = useState({}); // id -> displayName
@@ -24,13 +25,14 @@ export default function Board() {
   const [draft, setDraft] = useState("");
   const [connected, setConnected] = useState(false);
 
-  const socketRef = useRef(null);
   const bottomRef = useRef(null);
   const typingTimers = useRef({}); // auto-expire others' typing state
   const selfTypingTimer = useRef(null); // debounce our own "stopped typing"
   const isTypingRef = useRef(false);
+  const socketRef = useRef(null);
+  socketRef.current = socket;
 
-  // Load history once, then open the socket and subscribe to live events.
+  // Load history once.
   useEffect(() => {
     let cancelled = false;
     messagesApi
@@ -41,25 +43,26 @@ export default function Board() {
         setHasMore(hasMore);
       })
       .finally(() => !cancelled && setLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-    const socket = createSocket();
-    socketRef.current = socket;
+  // Subscribe to the shared socket's board events. We only attach/detach
+  // listeners here — the connection itself is owned by SocketProvider.
+  useEffect(() => {
+    if (!socket) return;
+    setConnected(socket.connected);
 
-    socket.on("connect", () => setConnected(true));
-    socket.on("disconnect", () => setConnected(false));
-
-    socket.on("message:new", (msg) => {
-      setMessages((prev) => [...prev, msg]);
-    });
-
-    socket.on("presence", (list) => setOnline(list));
-
-    socket.on("typing", ({ user: u, isTyping }) => {
+    const onConnect = () => setConnected(true);
+    const onDisconnect = () => setConnected(false);
+    const onMessage = (msg) => setMessages((prev) => [...prev, msg]);
+    const onPresence = (list) => setOnline(list);
+    const onTyping = ({ user: u, isTyping }) => {
       const id = String(u._id);
       clearTimeout(typingTimers.current[id]);
       if (isTyping) {
         setTypingUsers((prev) => ({ ...prev, [id]: u.displayName }));
-        // Safety net: drop the indicator if no "stopped" arrives.
         typingTimers.current[id] = setTimeout(() => {
           setTypingUsers((prev) => {
             const next = { ...prev };
@@ -74,13 +77,25 @@ export default function Board() {
           return next;
         });
       }
-    });
+    };
+
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    socket.on("message:new", onMessage);
+    socket.on("presence", onPresence);
+    socket.on("typing", onTyping);
+
+    // Grab the current presence list now (we may have connected at login).
+    socket.emit("presence:get");
 
     return () => {
-      cancelled = true;
-      socket.disconnect();
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+      socket.off("message:new", onMessage);
+      socket.off("presence", onPresence);
+      socket.off("typing", onTyping);
     };
-  }, []);
+  }, [socket]);
 
   // Keep the latest message in view.
   useEffect(() => {

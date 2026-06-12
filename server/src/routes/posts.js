@@ -5,6 +5,7 @@ import {
   requireAuth,
   requireSameNeighborhood,
 } from "../middleware/auth.js";
+import { notify } from "../lib/notify.js";
 
 const router = Router();
 
@@ -135,6 +136,17 @@ router.post(
       }
       req.post.comments.push({ author: req.user._id, body: body.trim() });
       await req.post.save();
+
+      // Let the post's author know someone replied (fire-and-forget).
+      notify({
+        recipient: req.post.author,
+        actor: req.user._id,
+        neighborhood: req.user.neighborhood,
+        type: "post_comment",
+        text: `${req.user.displayName} commented on your post`,
+        link: "/",
+      }).catch((e) => console.error("notify failed:", e.message));
+
       res.status(201).json({ post: await hydrate(req.post._id) });
     } catch (err) {
       next(err);
@@ -158,12 +170,26 @@ router.post(
       const existing = req.post.reactions.find(
         (r) => String(r.user) === uid && r.type === type
       );
+      const added = !existing;
       if (existing) {
         req.post.reactions.pull(existing);
       } else {
         req.post.reactions.push({ user: req.user._id, type });
       }
       await req.post.save();
+
+      // Only notify when a reaction is added (not when toggled off).
+      if (added) {
+        notify({
+          recipient: req.post.author,
+          actor: req.user._id,
+          neighborhood: req.user.neighborhood,
+          type: "post_reaction",
+          text: `${req.user.displayName} reacted to your post`,
+          link: "/",
+        }).catch((e) => console.error("notify failed:", e.message));
+      }
+
       res.json({ post: await hydrate(req.post._id) });
     } catch (err) {
       next(err);

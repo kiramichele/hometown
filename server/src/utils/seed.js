@@ -7,6 +7,7 @@ import Post from "../models/Post.js";
 import Event from "../models/Event.js";
 import Message from "../models/Message.js";
 import Listing from "../models/Listing.js";
+import Notification from "../models/Notification.js";
 
 // Build a Date relative to now: N days out, at a given hour (local time).
 function daysFromNow(days, hour = 18) {
@@ -27,6 +28,7 @@ async function seed() {
     Event.deleteMany({}),
     Message.deleteMany({}),
     Listing.deleteMany({}),
+    Notification.deleteMany({}),
   ]);
 
   const hood = await Neighborhood.create({
@@ -222,8 +224,30 @@ async function seed() {
     },
   ]);
 
+  // A couple of unread notifications for Jane so the bell shows a badge.
+  await Notification.create([
+    {
+      recipient: jane._id,
+      neighborhood: hood._id,
+      actor: admin._id,
+      type: "post_reaction",
+      text: "Admin User reacted to your post",
+      link: "/",
+      read: false,
+    },
+    {
+      recipient: jane._id,
+      neighborhood: hood._id,
+      actor: mod._id,
+      type: "post_comment",
+      text: "Mod User commented on your post",
+      link: "/",
+      read: false,
+    },
+  ]);
+
   console.log(
-    "✓ Seeded neighborhood + 3 users (password: password123) + 4 posts + 4 events + 3 messages + 5 listings"
+    "✓ Seeded neighborhood + 3 users (password: password123) + 4 posts + 4 events + 3 messages + 5 listings + 2 notifications"
   );
   await mongoose.disconnect();
 }

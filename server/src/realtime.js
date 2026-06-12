@@ -12,8 +12,18 @@ const AUTHOR_FIELDS = "displayName avatarUrl role";
 // move this to Redis.
 const presence = new Map();
 
+// Module-level handle to the Socket.io server so non-socket code (the notify()
+// helper) can push events to a specific user's personal room.
+let ioRef = null;
+
 function roomFor(neighborhoodId) {
   return `hood:${neighborhoodId}`;
+}
+
+// Emit an event to one user across all their open tabs. No-op if the realtime
+// layer isn't up yet (e.g. during a script run).
+export function emitToUser(userId, event, data) {
+  if (ioRef) ioRef.to(`user:${userId}`).emit(event, data);
 }
 
 function presenceList(hood) {
@@ -52,6 +62,7 @@ export function attachRealtime(httpServer) {
   const io = new Server(httpServer, {
     cors: { origin: process.env.CLIENT_ORIGIN || "http://localhost:5173" },
   });
+  ioRef = io;
 
   // Handshake auth — same JWT the REST API uses, passed via socket auth.
   io.use(async (socket, next) => {
@@ -76,6 +87,8 @@ export function attachRealtime(httpServer) {
     // Join this neighborhood's room — the scoping that keeps every broadcast
     // inside one neighborhood (the realtime equivalent of requireSameNeighborhood).
     socket.join(room);
+    // Also join a personal room so notify() can reach just this user.
+    socket.join(`user:${user._id}`);
     addPresence(hood, user);
     io.to(room).emit("presence", presenceList(hood));
 
@@ -99,6 +112,12 @@ export function attachRealtime(httpServer) {
         console.error("message:send failed", err);
         ack?.({ error: "Failed to send" });
       }
+    });
+
+    // The board asks for the current presence list on mount (it may have
+    // joined at login, before the board page was listening).
+    socket.on("presence:get", () => {
+      socket.emit("presence", presenceList(hood));
     });
 
     // Typing indicator — broadcast to everyone in the room except the sender.
